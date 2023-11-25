@@ -1,0 +1,15 @@
+{
+  "name": "web3-mm-example",
+  "version": "0.0.1",
+  "description": "Simple example of using MetaMask, Web3 lib, callData",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

